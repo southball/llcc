@@ -44,6 +44,14 @@ void error_at(char *loc, char *fmt, ...) {
   exit(1);
 }
 
+void error(char *fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+  vfprintf(stderr, fmt, ap);
+  fprintf(stderr, "\n");
+  exit(1);
+}
+
 // Read a single token. Return true if expected. Return false otherwise.
 bool consume(char *op) {
   if (token->kind != TK_RESERVED || strlen(op) != token->len ||
@@ -51,6 +59,15 @@ bool consume(char *op) {
     return false;
   token = token->next;
   return true;
+}
+
+Token *consume_ident() {
+  if (token->kind == TK_IDENT) {
+    Token *tok = token;
+    token = token->next;
+    return tok;
+  }
+  return NULL;
 }
 
 // Read a single token. Return true if expected. Err if unexpected.
@@ -81,6 +98,11 @@ Token *tokenize(char *p) {
       continue;
     }
 
+    if ('a' <= *p && *p <= 'z') {
+      cur = new_token(TK_IDENT, cur, p++, 1);
+      continue;
+    }
+
     if (!strncmp(p, "<=", 2) || !strncmp(p, ">=", 2) || !strncmp(p, "==", 2) ||
         !strncmp(p, "!=", 2)) {
       cur = new_token(TK_RESERVED, cur, p, 2);
@@ -89,7 +111,7 @@ Token *tokenize(char *p) {
     }
 
     if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' ||
-        *p == ')' || *p == '<' || *p == '>') {
+        *p == ')' || *p == '<' || *p == '>' || *p == ';' || *p == '=') {
       cur = new_token(TK_RESERVED, cur, p++, 1);
       continue;
     }
@@ -109,7 +131,12 @@ Token *tokenize(char *p) {
   return head.next;
 }
 
+Node *code[100];
+
+void program();
+Node *stmt();
 Node *expr();
+Node *assign();
 Node *equality();
 Node *relational();
 Node *add();
@@ -123,6 +150,15 @@ Node *primary() {
     expect(')');
     return node;
   }
+
+  Token *tok = consume_ident();
+  if (tok) {
+    Node *node = calloc(1, sizeof(Node));
+    node->kind = ND_LVAR;
+    node->offset = (tok->str[0] - 'a' + 1) * 8;
+    return node;
+  }
+
   return new_node_num(expect_number());
 }
 
@@ -188,4 +224,24 @@ Node *equality() {
   }
 }
 
-Node *expr() { return equality(); }
+Node *assign() {
+  Node *node = equality();
+  if (consume("="))
+    node = new_node(ND_ASSIGN, node, assign());
+  return node;
+}
+
+Node *expr() { return assign(); }
+
+Node *stmt() {
+  Node *node = expr();
+  expect(';');
+  return node;
+}
+
+void program() {
+  int i = 0;
+  while (!at_eof())
+    code[i++] = stmt();
+  code[i] = NULL;
+}
