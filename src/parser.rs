@@ -67,7 +67,7 @@ impl Parser {
         if let Some(token) = self.consume_ident() {
             let TokenData::Ident(ident) = token.data else {panic!()};
             return Ok(Node::LVar(
-                (ident.chars().next().unwrap() as i32) - ('a' as i32),
+                ((ident.chars().next().unwrap() as i32) - ('a' as i32) + 1) * 8,
             ));
         }
 

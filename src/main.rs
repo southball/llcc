@@ -1,5 +1,7 @@
 use std::process::exit;
 
+use codegen::Codegen;
+
 use crate::{
     display::display_error,
     parser::{ParseError, Parser},
@@ -8,6 +10,7 @@ use crate::{
 mod display;
 mod node;
 mod parser;
+mod codegen;
 mod token;
 mod tokenizer;
 
@@ -24,7 +27,7 @@ fn main() {
             exit(1)
         }
     };
-    println!("{:?}", &tokens);
+    // println!("{:?}", &tokens);
 
     let mut parser = Parser::new(tokens.clone());
     let statements = match parser.parse_program() {
@@ -34,5 +37,8 @@ fn main() {
             exit(1)
         }
     };
-    println!("{:?}", statements);
+    // println!("{:?}", statements);
+    
+    let code = Codegen::gen(statements);
+    println!("{}", code);
 }

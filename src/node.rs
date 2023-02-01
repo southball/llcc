@@ -6,8 +6,6 @@ pub enum NodeBinaryOp {
     Div,
     Lt,
     Le,
-    Gt,
-    Ge,
     Eq,
     Ne,
     Assign,
