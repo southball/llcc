@@ -14,6 +14,7 @@ pub enum NodeBinaryOp {
 #[derive(Debug)]
 pub enum Node {
     BinaryOp(NodeBinaryOp, Box<Node>, Box<Node>),
+    Return(Box<Node>),
     Num(i32),
     LVar(String, i32),
 }

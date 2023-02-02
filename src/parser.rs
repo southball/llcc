@@ -36,6 +36,15 @@ impl Parser {
         None
     }
 
+    pub fn consume_return(&mut self) -> Option<Token> {
+        if let TokenData::Return = self.tokens[self.head].data.clone() {
+            self.head += 1;
+            return Some(self.tokens[self.head - 1].clone());
+        }
+
+        None
+    }
+
     pub fn consume_ident(&mut self) -> Option<Token> {
         if let TokenData::Ident(_ident) = self.tokens[self.head].data.clone() {
             self.head += 1;
@@ -225,7 +234,12 @@ impl Parser {
     }
 
     pub fn parse_stmt(&mut self) -> ParseResult<Node> {
-        let node = self.parse_expr()?;
+        let node;
+        if let Some(_) = self.consume_return() {
+            node = Node::Return(Box::new(self.parse_expr()?));
+        } else {
+            node = self.parse_expr()?;
+        }
         let token = self.consume_reserved(";");
         self.expect(token, "Semicolon expected.".to_string())?;
         Ok(node)

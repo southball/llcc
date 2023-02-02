@@ -3,6 +3,7 @@ pub enum TokenData {
     Reserved(String),
     Ident(String),
     Num(i32),
+    Return,
     Eof,
 }
 

@@ -47,7 +47,6 @@ impl Codegen {
                 code += &Codegen::gen_stmt(rhs);
                 code += "  pop rdi\n";
                 code += "  pop rax\n";
-
                 match op {
                     NodeBinaryOp::Add => {
                         code += "  add rax, rdi\n";
@@ -76,10 +75,17 @@ impl Codegen {
                         );
                         code += "  movzb rax, al\n";
                     }
-                    _ => unreachable!()
+                    _ => unreachable!(),
                 }
 
                 code += "  push rax\n";
+            }
+            Node::Return(expr) => {
+                code += &Codegen::gen_stmt(expr);
+                code += "  pop rax\n";
+                code += "  mov rsp, rbp\n";
+                code += "  pop rbp\n";
+                code += "  ret\n";
             }
         }
 

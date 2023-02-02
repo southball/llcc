@@ -34,5 +34,6 @@ assert 1 '1<=1;'
 assert 0 '1>=2;'
 assert 3 'a=1;b=2;a+b;'
 assert 10 'bread=7; drink=5; discount=2; bread+drink-discount;'
+assert 5 'a=5; return a; a=7; return a;'
 
 echo OK

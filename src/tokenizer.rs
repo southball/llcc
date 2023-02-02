@@ -21,6 +21,19 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, TokenizerError> {
         }
 
         if chars[i].is_alphabetic() {
+            // Keyword detection
+            if i + 6 < chars.len() {
+                let maybe_return = chars[i..i + 6].iter().collect::<String>();
+                if maybe_return == "return" {
+                    tokens.push(Token {
+                        data: TokenData::Return,
+                        position: i,
+                    });
+                    i += 6;
+                    continue;
+                }
+            }
+
             let mut j = i;
             while j < chars.len() && chars[j].is_alphabetic() {
                 j += 1;
