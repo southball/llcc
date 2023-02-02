@@ -15,5 +15,6 @@ pub enum NodeBinaryOp {
 pub enum Node {
     BinaryOp(NodeBinaryOp, Box<Node>, Box<Node>),
     Num(i32),
-    LVar(i32),
+    LVar(String, i32),
 }
+

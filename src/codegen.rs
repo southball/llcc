@@ -7,7 +7,7 @@ impl Codegen {
         let mut code = String::new();
 
         match lval {
-            Node::LVar(offset) => {
+            Node::LVar(_, offset) => {
                 code += "  mov rax, rbp\n";
                 code += &format!("  sub rax, {}\n", offset);
                 code += "  push rax\n";
@@ -26,7 +26,7 @@ impl Codegen {
                 code += &format!("  push {}\n", num);
                 return code;
             }
-            Node::LVar(_offset) => {
+            Node::LVar(_, _) => {
                 code += &Codegen::gen_lval(stmt);
                 code += "  pop rax\n";
                 code += "  mov rax, [rax]\n";

@@ -9,11 +9,16 @@ type ParseResult<T> = Result<T, ParseError>;
 pub struct Parser {
     tokens: Vec<Token>,
     head: usize,
+    locals: Vec<Node>,
 }
 
 impl Parser {
     pub fn new(tokens: Vec<Token>) -> Parser {
-        Parser { tokens, head: 0 }
+        Parser {
+            tokens,
+            head: 0,
+            locals: Vec::new(),
+        }
     }
 
     fn eof(&self) -> bool {
@@ -56,6 +61,22 @@ impl Parser {
         }
     }
 
+    pub fn try_get_lvar_offset(&mut self, name: &str) -> i32 {
+        let offset = self.locals.iter().find_map(|node| match node {
+            Node::LVar(lvar_name, lvar_offset) if name == lvar_name => Some(*lvar_offset),
+            _ => None,
+        });
+
+        match offset {
+            Some(offset) => offset,
+            None => {
+                let new_offset = (self.locals.len() as i32 + 1) * 8;
+                self.locals.push(Node::LVar(name.to_owned(), new_offset));
+                new_offset
+            }
+        }
+    }
+
     pub fn parse_primary(&mut self) -> ParseResult<Node> {
         if let Some(_) = self.consume_reserved("(") {
             let node = self.parse_expr();
@@ -66,9 +87,8 @@ impl Parser {
 
         if let Some(token) = self.consume_ident() {
             let TokenData::Ident(ident) = token.data else {panic!()};
-            return Ok(Node::LVar(
-                ((ident.chars().next().unwrap() as i32) - ('a' as i32) + 1) * 8,
-            ));
+            let offset = self.try_get_lvar_offset(&ident);
+            return Ok(Node::LVar(ident, offset));
         }
 
         let token = self.consume_number();
